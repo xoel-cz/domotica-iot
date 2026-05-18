@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domótica IoT – Xoel Cristobo Zúñiga</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --bg2: #0f1524;
+      --bg3: #141b2e;
+      --accent: #00e5ff;
+      --accent2: #7c3aed;
+      --accent3: #10b981;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --card: #111827;
+      --border: rgba(0,229,255,0.15);
+      --glow: 0 0 30px rgba(0,229,255,0.18);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(10,14,23,0.82);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo span { color: var(--text); }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 0.2rem;
+      flex-wrap: wrap;
+    }
+
+    nav ul a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    nav ul a:hover {
+      color: var(--accent);
+      background: rgba(0,229,255,0.08);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 5rem;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.06) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 100%);
+    }
+
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+    .hero-orb.a { width: 500px; height: 500px; background: rgba(0,229,255,0.12); top: -120px; left: -100px; }
+    .hero-orb.b { width: 400px; height: 400px; background: rgba(124,58,237,0.12); bottom: 0; right: -80px; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0,229,255,0.08);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.35rem 1rem;
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 1.8rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .hero-badge::before {
+      content: '';
+      display: block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 .line1 { display: block; color: var(--text); }
+    .hero h1 .line2 {
+      display: block;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      max-width: 600px;
+      color: var(--muted);
+      font-size: 1.15rem;
+      margin-bottom: 2.5rem;
+      font-weight: 300;
+    }
+
+    .hero-author {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .hero-author strong { color: var(--accent); font-weight: 600; }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .hero-scroll::after {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      animation: scrollline 1.8s ease-in-out infinite;
+    }
+
+    @keyframes scrollline { 0%,100% { transform: scaleY(1); opacity: 1; } 50% { transform: scaleY(0.5); opacity: 0.4; } }
+
+    /* ── SECTIONS COMMON ── */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .section-desc {
+      color: var(--muted);
+      max-width: 620px;
+      margin-bottom: 3.5rem;
+      font-size: 1rem;
+    }
+
+    /* ── DEFINITION ── */
+    #definicion .def-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    #definicion .def-text p { color: var(--muted); margin-bottom: 1rem; }
+    #definicion .def-text p strong { color: var(--text); }
+
+    .def-stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-item .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-item .stat-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    .stat-divider { height: 1px; background: var(--border); }
+
+    /* ── HOW IT WORKS ── */
+    #funcionamiento {
+      background: linear-gradient(180deg, transparent, rgba(0,229,255,0.03), transparent);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      position: relative;
+    }
+
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 40px;
+      left: calc(12.5% + 20px);
+      right: calc(12.5% + 20px);
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0.3;
+      z-index: 0;
+    }
+
+    .step-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      position: relative;
+      z-index: 1;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .step-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--glow);
+    }
+
+    .step-number {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #000;
+      margin-bottom: 1.25rem;
+    }
+
+    .step-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      color: var(--text);
+    }
+
+    .step-card p { font-size: 0.88rem; color: var(--muted); }
+
+    .step-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+
+    .practical-note {
+      margin-top: 2.5rem;
+      background: rgba(0,229,255,0.05);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 12px;
+      padding: 1.25rem 1.75rem;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .practical-note strong { color: var(--accent); }
+
+    /* ── CATEGORIES ── */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .cat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: default;
+    }
+
+    .cat-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4), var(--glow);
+    }
+
+    .cat-img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      display: block;
+      filter: brightness(0.75) saturate(0.8);
+      transition: filter 0.4s;
+    }
+
+    .cat-card:hover .cat-img { filter: brightness(0.9) saturate(1); }
+
+    .cat-body { padding: 1.5rem; }
+
+    .cat-tag {
+      display: inline-block;
+      background: rgba(0,229,255,0.1);
+      color: var(--accent);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.65rem;
+      border-radius: 100px;
+      margin-bottom: 0.75rem;
+    }
+
+    .cat-body h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .cat-body p { font-size: 0.87rem; color: var(--muted); }
+
+    /* ── EXAMPLES ── */
+    .ex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+    .ex-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .ex-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), var(--glow);
+    }
+
+    .ex-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      filter: brightness(0.7) saturate(0.7);
+      transition: filter 0.4s;
+    }
+
+    .ex-card:hover .ex-img { filter: brightness(0.88) saturate(1); }
+
+    .ex-body { padding: 2rem; }
+
+    .ex-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 0.5rem;
+    }
+
+    .ex-body h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .ex-body p { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.75rem; }
+    .ex-body p strong { color: var(--text); }
+
+    /* ── PROS & CONS ── */
+    .pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+    .pc-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+    }
+
+    .pc-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pc-card.pros h3 { color: var(--accent3); }
+    .pc-card.cons h3 { color: #f87171; }
+
+    .pc-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .pc-card ul li {
+      font-size: 0.9rem;
+      color: var(--muted);
+      padding-left: 1.4rem;
+      position: relative;
+    }
+
+    .pc-card.pros ul li::before {
+      content: '→';
+      position: absolute; left: 0;
+      color: var(--accent3);
+      font-weight: 700;
+    }
+
+    .pc-card.cons ul li::before {
+      content: '→';
+      position: absolute; left: 0;
+      color: #f87171;
+      font-weight: 700;
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    thead { background: rgba(0,229,255,0.06); }
+
+    th {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      text-align: left;
+      padding: 1rem 1.25rem;
+      color: var(--accent);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.9rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--muted);
+      vertical-align: middle;
+    }
+
+    td:first-child { color: var(--text); font-weight: 500; }
+
+    tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover { background: rgba(0,229,255,0.03); }
+
+    .check { color: var(--accent3); font-weight: 700; }
+    .cross { color: #f87171; font-weight: 700; }
+
+    /* ── STATS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+    }
+
+    .stat-emoji { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+
+    .stat-card .big-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+
+    .stat-card .stat-desc {
+      font-size: 0.83rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+
+    /* ── MIND MAP ── */
+    .mindmap-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      overflow-x: auto;
+    }
+
+    .mindmap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      min-width: 600px;
+    }
+
+    .mm-center {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #000;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      border-radius: 16px;
+      padding: 1rem 2rem;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(0,229,255,0.3);
+    }
+
+    .mm-branches {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .mm-branch {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .mm-branch .mm-icon { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
+    .mm-branch .mm-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem; }
+    .mm-branch .mm-desc { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── REFERENCES ── */
+    .ref-list { display: flex; flex-direction: column; gap: 1rem; }
+
+    .ref-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .ref-item .ref-bullet {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      margin-top: 0.55rem;
+    }
+
+    .ref-item .ref-content { font-size: 0.9rem; color: var(--muted); }
+    .ref-item .ref-content strong { color: var(--text); }
+    .ref-item .ref-content a { color: var(--accent); text-decoration: none; }
+    .ref-item .ref-content a:hover { text-decoration: underline; }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    footer strong { color: var(--accent); }
+
+    /* ── DIVIDER ── */
+    .section-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0 auto;
+      max-width: 1100px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav ul { display: none; }
+      #definicion .def-grid,
+      .ex-grid,
+      .pc-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .steps-grid::before { display: none; }
+      .cat-grid { grid-template-columns: 1fr 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .mm-branches { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .cat-grid,
+      .steps-grid,
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── FADE-IN ANIMATION ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">IoT<span>Domótica</span></div>
+  <ul>
+    <li><a href="#definicion">Qué es</a></li>
+    <li><a href="#funcionamiento">Cómo funciona</a></li>
+    <li><a href="#categorias">Categorías</a></li>
+    <li><a href="#ejemplos">Ejemplos</a></li>
+    <li><a href="#ventajas">Ventajas</a></li>
+    <li><a href="#comparativa">Comparativa</a></li>
+    <li><a href="#cifras">Cifras</a></li>
+    <li><a href="#mapa">Mapa mental</a></li>
+    <li><a href="#referencias">Referencias</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-orb a"></div>
+  <div class="hero-orb b"></div>
+
+  <div class="hero-badge">Internet of Things · Domótica</div>
+
+  <h1>
+    <span class="line1">El hogar</span>
+    <span class="line2">conectado</span>
+  </h1>
+
+  <p class="hero-sub">
+    Los objetos inteligentes que conectan el mundo físico con la red,
+    transformando la vida cotidiana de maneras que apenas imaginamos.
+  </p>
+
+  <p class="hero-author">Elaborado por <strong>Xoel Cristobo Zúñiga</strong></p>
+
+  <div class="hero-scroll">Scroll</div>
+</div>
+
+<!-- DEFINICION -->
+<section id="definicion">
+  <div class="fade-in">
+    <span class="section-label">01 · Definición</span>
+    <h2>¿Qué son los dispositivos IoT?</h2>
+  </div>
+  <div class="def-grid fade-in">
+    <div class="def-text">
+      <p>
+        Los <strong>dispositivos IoT</strong> (Internet of Things, en español <em>Internet de las Cosas</em>) son
+        objetos físicos equipados con sensores, software y conectividad de red que les permiten
+        <strong>recopilar, enviar y recibir datos</strong> a través de internet, sin necesitar intervención humana directa.
+      </p>
+      <p>
+        A diferencia de los ordenadores o smartphones tradicionales, los dispositivos IoT son en muchos casos
+        pequeños, especializados y diseñados para realizar <em>una sola tarea muy bien</em>: medir la temperatura,
+        detectar movimiento, controlar la luz de una habitación o gestionar el consumo eléctrico.
+      </p>
+      <p>
+        El término fue acuñado por <strong>Kevin Ashton</strong> en 1999, cuando trabajaba en el MIT Auto-ID Center.
+        Hoy en día, se estima que existen más de <strong>15.000 millones</strong> de dispositivos IoT conectados
+        en todo el mundo.
+      </p>
+      <p>
+        En el ámbito del hogar, hablamos de <strong>domótica</strong>: la automatización inteligente de viviendas
+        mediante dispositivos IoT que comunican entre sí, aprenden hábitos y optimizan el confort, la seguridad
+        y la eficiencia energética.
+      </p>
+    </div>
+    <div class="def-stat-box">
+      <div class="stat-item">
+        <span class="stat-num">15.000 M</span>
+        <span class="stat-label">Dispositivos IoT activos en el mundo (2023)</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">29.400 M</span>
+        <span class="stat-label">Dispositivos previstos para 2030 (Statista)</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">1999</span>
+        <span class="stat-label">Año en que se acuñó el término IoT (Kevin Ashton)</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">805.000 M $</span>
+        <span class="stat-label">Valor del mercado IoT global en 2023</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- FUNCIONAMIENTO -->
+<section id="funcionamiento">
+  <div class="fade-in">
+    <span class="section-label">02 · Arquitectura</span>
+    <h2>¿Cómo funcionan los dispositivos IoT?</h2>
+    <p class="section-desc">
+      Todos los dispositivos IoT comparten la misma arquitectura de cuatro capas.
+      Cada capa es indispensable para que el sistema funcione correctamente.
+    </p>
+  </div>
+  <div class="steps-grid fade-in">
+    <div class="step-card">
+      <div class="step-icon">👁️</div>
+      <div class="step-number">1</div>
+      <h3>Percepción</h3>
+      <p>Los sensores capturan datos del mundo físico: temperatura, humedad, movimiento, luz, presión o imágenes. Son los "ojos y oídos" del dispositivo.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">📡</div>
+      <div class="step-number">2</div>
+      <h3>Conectividad</h3>
+      <p>Los datos captados se envían a través de una red: Wi-Fi, Bluetooth, Zigbee, LoRaWAN o red móvil (4G/5G). La elección depende de la distancia y el consumo.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">☁️</div>
+      <div class="step-number">3</div>
+      <h3>Procesamiento</h3>
+      <p>Los datos llegan a un servidor en la nube o se procesan en el propio dispositivo (edge computing). Se aplican algoritmos e inteligencia artificial.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">⚡</div>
+      <div class="step-number">4</div>
+      <h3>Acción</h3>
+      <p>El sistema responde: enciende una luz, envía una notificación, activa un motor o abre una válvula. Los actuadores convierten decisiones digitales en acciones físicas.</p>
+    </div>
+  </div>
+  <div class="practical-note fade-in">
+    <strong>💡 Ejemplo práctico:</strong> Un termostato inteligente mide la temperatura (sensor) →
+    envía el dato por Wi-Fi (red) → un servidor calcula si es necesario calentar (proceso) →
+    activa la calefacción (actuador).
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- CATEGORIAS -->
+<section id="categorias">
+  <div class="fade-in">
+    <span class="section-label">03 · Categorías</span>
+    <h2>Principales categorías de dispositivos IoT</h2>
+    <p class="section-desc">
+      Los dispositivos IoT se clasifican según el ámbito en el que operan. Cada categoría
+      tiene características técnicas y necesidades de conectividad muy diferentes.
+    </p>
+  </div>
+  <div class="cat-grid fade-in">
+    <div class="cat-card">
+      <img class="cat-img" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" alt="Hogar inteligente" />
+      <div class="cat-body">
+        <span class="cat-tag">Doméstico</span>
+        <h3>Hogar inteligente (Smart Home)</h3>
+        <p>Termostatos, bombillas inteligentes, cámaras de seguridad, altavoces con IA (Alexa, Google Home), enchufes inteligentes y electrodomésticos conectados.</p>
+      </div>
+    </div>
+    <div class="cat-card">
+      <img class="cat-img" src="https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=600&q=80" alt="Wearables de salud" />
+      <div class="cat-body">
+        <span class="cat-tag">Wearables</span>
+        <h3>Salud y deporte</h3>
+        <p>Relojes inteligentes, pulseras de actividad, monitores de ritmo cardíaco, glucómetros conectados y dispositivos de monitorización de bebés.</p>
+      </div>
+    </div>
+    <div class="cat-card">
+      <img class="cat-img" src="https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=600&q=80" alt="Industrial IoT" />
+      <div class="cat-body">
+        <span class="cat-tag">Industrial</span>
+        <h3>IoT Industrial (IIoT)</h3>
+        <p>Sensores en maquinaria de fábrica, brazos robóticos conectados, sistemas de gestión de almacenes, drones de inspección y monitores de calidad en líneas de producción.</p>
+      </div>
+    </div>
+    <div class="cat-card">
+      <img class="cat-img" src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80" alt="Ciudad inteligente" />
+      <div class="cat-body">
+        <span class="cat-tag">Smart City</span>
+        <h3>Ciudades inteligentes</h3>
+        <p>Semáforos adaptativos, sensores de aparcamiento, contenedores de basura conectados, iluminación pública eficiente y redes de medición de calidad del aire.</p>
+      </div>
+    </div>
+    <div class="cat-card">
+      <img class="cat-img" src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&q=80" alt="Agricultura inteligente" />
+      <div class="cat-body">
+        <span class="cat-tag">Agricultura</span>
+        <h3>Agricultura inteligente</h3>
+        <p>Sensores de humedad y pH del suelo, drones de fumigación automatizados, sistemas de riego inteligente y monitores meteorológicos para granjas.</p>
+      </div>
+    </div>
+    <div class="cat-card">
+      <img class="cat-img" src="https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=600&q=80" alt="Vehículos conectados" />
+      <div class="cat-body">
+        <span class="cat-tag">Transporte</span>
+        <h3>Vehículos conectados</h3>
+        <p>Coches con telemetría en tiempo real, GPS de flotas de camiones, sistemas de diagnóstico remoto OBD y vehículos autónomos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- EJEMPLOS -->
+<section id="ejemplos">
+  <div class="fade-in">
+    <span class="section-label">04 · Casos reales</span>
+    <h2>Dos ejemplos reales bien explicados</h2>
+    <p class="section-desc">
+      Analizamos en profundidad dos dispositivos que representan perfectamente la diversidad
+      de aplicaciones de la tecnología IoT en nuestra vida cotidiana.
+    </p>
+  </div>
+  <div class="ex-grid fade-in">
+    <div class="ex-card">
+      <img class="ex-img" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=700&q=80" alt="Smartwatch" />
+      <div class="ex-body">
+        <div class="ex-num">Ejemplo 01</div>
+        <h3>Reloj inteligente (Smartwatch)</h3>
+        <p>
+          Un smartwatch como el Apple Watch o el Samsung Galaxy Watch es mucho más que un reloj:
+          es un laboratorio de salud en la muñeca.
+        </p>
+        <p>
+          <strong>Cómo funciona:</strong> Sus sensores miden el ritmo cardíaco mediante luz LED que refleja
+          en los vasos sanguíneos (fotopletismografía), detectan caídas con un acelerómetro, miden
+          los niveles de oxígeno en sangre (SpO₂) e incluso realizan electrocardiogramas simples.
+          Todos estos datos se envían por Bluetooth al smartphone y de ahí a la nube.
+        </p>
+        <p>
+          <strong>Impacto real:</strong> En 2018, un Apple Watch detectó fibrilación auricular en un usuario
+          que no sabía que la padecía, salvándole la vida. Hoy, los smartwatch son dispositivos
+          médicos reconocidos por la FDA americana.
+        </p>
+      </div>
+    </div>
+    <div class="ex-card">
+      <img class="ex-img" src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=700&q=80" alt="Contador eléctrico inteligente" />
+      <div class="ex-body">
+        <div class="ex-num">Ejemplo 02</div>
+        <h3>Contador eléctrico inteligente (Smart Meter)</h3>
+        <p>
+          Desde 2018, España obliga a instalar contadores inteligentes de electricidad en todos los
+          hogares. Probablemente tengas uno en tu casa.
+        </p>
+        <p>
+          <strong>Cómo funciona:</strong> El contador mide el consumo de energía cada 15 minutos y
+          envía esos datos automáticamente a la empresa distribuidora mediante la red PLC
+          (Power Line Communication, que usa el propio cable eléctrico como medio de transmisión)
+          o red móvil. No es necesaria ninguna visita del técnico para leer el contador.
+        </p>
+        <p>
+          <strong>Ventajas concretas:</strong> Permite facturar por el consumo real y no por estimaciones,
+          detectar fallos en la red antes de que provoquen cortes, y hacer análisis de eficiencia
+          energética para reducir la factura de la luz.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- VENTAJAS -->
+<section id="ventajas">
+  <div class="fade-in">
+    <span class="section-label">05 · Evaluación</span>
+    <h2>Ventajas e inconvenientes</h2>
+    <p class="section-desc">
+      Como toda tecnología, los dispositivos IoT ofrecen grandes oportunidades
+      pero también presentan riesgos que no debemos ignorar.
+    </p>
+  </div>
+  <div class="pc-grid fade-in">
+    <div class="pc-card pros">
+      <h3>✅ Ventajas</h3>
+      <ul>
+        <li>Automatización de tareas repetitivas, ahorrando tiempo y esfuerzo humano.</li>
+        <li>Monitorización en tiempo real de parámetros críticos (salud, energía, seguridad).</li>
+        <li>Ahorro energético: los termostatos IoT reducen el consumo hasta un 23%.</li>
+        <li>Mejora de la calidad de vida de personas mayores o con discapacidad.</li>
+        <li>Optimización de procesos industriales y reducción de costes de mantenimiento.</li>
+        <li>Recogida masiva de datos para tomar mejores decisiones (Big Data).</li>
+        <li>Respuesta rápida ante emergencias (alarmas, detección de incendios, caídas).</li>
+      </ul>
+    </div>
+    <div class="pc-card cons">
+      <h3>⚠️ Inconvenientes y riesgos</h3>
+      <ul>
+        <li>Vulnerabilidad a la ciberseguridad: muchos dispositivos tienen seguridad deficiente.</li>
+        <li>Privacidad: recogen grandes cantidades de datos personales de forma continua.</li>
+        <li>Obsolescencia rápida: el software deja de actualizarse en pocos años.</li>
+        <li>Dependencia de la conectividad: sin internet, el dispositivo puede inutilizarse.</li>
+        <li>Interoperabilidad: falta de estándares comunes entre distintos fabricantes.</li>
+        <li>Impacto ambiental: generan residuos electrónicos y consumen energía constantemente.</li>
+        <li>Brecha digital: no todos los usuarios tienen acceso o conocimientos para usarlos.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- COMPARATIVA -->
+<section id="comparativa">
+  <div class="fade-in">
+    <span class="section-label">06 · Comparativa</span>
+    <h2>Comparativa de dispositivos IoT comunes</h2>
+    <p class="section-desc">
+      La siguiente tabla compara las características principales de cinco dispositivos IoT
+      representativos de diferentes categorías.
+    </p>
+  </div>
+  <div class="table-wrap fade-in">
+    <table>
+      <thead>
+        <tr>
+          <th>Dispositivo</th>
+          <th>Categoría</th>
+          <th>Conectividad</th>
+          <th>Consumo</th>
+          <th>Datos que recoge</th>
+          <th>Wi-Fi propio</th>
+          <th>Batería</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Smartwatch</td>
+          <td>Wearable / Salud</td>
+          <td>Bluetooth, Wi-Fi</td>
+          <td>Bajo</td>
+          <td>FCR, SpO₂, pasos, GPS</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span> (1-2 días)</td>
+        </tr>
+        <tr>
+          <td>Contador inteligente</td>
+          <td>Hogar / Energía</td>
+          <td>PLC, 4G</td>
+          <td>Muy bajo</td>
+          <td>Consumo eléctrico c/15 min</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span> (red eléctrica)</td>
+        </tr>
+        <tr>
+          <td>Termostato Nest</td>
+          <td>Hogar inteligente</td>
+          <td>Wi-Fi, Bluetooth</td>
+          <td>Muy bajo</td>
+          <td>Temperatura, humedad, presencia</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span> (enchufe)</td>
+        </tr>
+        <tr>
+          <td>Sensor de fábrica</td>
+          <td>Industrial (IIoT)</td>
+          <td>Ethernet, LoRaWAN</td>
+          <td>Variable</td>
+          <td>Vibración, temperatura, presión</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="check">✓</span> / enchufe</td>
+        </tr>
+        <tr>
+          <td>Cámara IP de seguridad</td>
+          <td>Hogar / Seguridad</td>
+          <td>Wi-Fi</td>
+          <td>Medio</td>
+          <td>Vídeo HD, audio, movimiento</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span> (enchufe)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- CIFRAS -->
+<section id="cifras">
+  <div class="fade-in">
+    <span class="section-label">07 · Datos clave</span>
+    <h2>El IoT en cifras</h2>
+    <p class="section-desc">
+      Algunos datos que ayudan a comprender la magnitud de esta tecnología en el mundo actual.
+    </p>
+  </div>
+  <div class="stats-grid fade-in">
+    <div class="stat-card">
+      <span class="stat-emoji">🌐</span>
+      <div class="big-num">15.000 M</div>
+      <div class="stat-desc">Dispositivos IoT activos en el mundo en 2023</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-emoji">📈</span>
+      <div class="big-num">29.400 M</div>
+      <div class="stat-desc">Dispositivos previstos para 2030 (Statista)</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-emoji">💰</span>
+      <div class="big-num">805.000 M $</div>
+      <div class="stat-desc">Valor del mercado IoT global en 2023</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-emoji">⚡</span>
+      <div class="big-num">23%</div>
+      <div class="stat-desc">Ahorro medio en energía con termostatos inteligentes</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-emoji">🔒</span>
+      <div class="big-num">1 de cada 3</div>
+      <div class="stat-desc">Dispositivos IoT fueron objeto de un ciberataque en 2022</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-emoji">🩺</span>
+      <div class="big-num">+40%</div>
+      <div class="stat-desc">Dispositivos médicos IoT en el mercado desde 2019</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- MAPA MENTAL -->
+<section id="mapa">
+  <div class="fade-in">
+    <span class="section-label">08 · Mapa mental</span>
+    <h2>El ecosistema IoT</h2>
+    <p class="section-desc">
+      Este mapa mental muestra cómo los dispositivos IoT se relacionan con los demás componentes
+      del ecosistema del Internet de las Cosas.
+    </p>
+  </div>
+  <div class="mindmap-wrap fade-in">
+    <div class="mindmap">
+      <div class="mm-center">
+        🏠 Dispositivos IoT<br>
+        <small style="font-weight:400;font-size:0.8rem;">(puerta al mundo físico)</small>
+      </div>
+      <div class="mm-branches">
+        <div class="mm-branch">
+          <span class="mm-icon">🏠</span>
+          <div class="mm-title">Hogar inteligente</div>
+          <div class="mm-desc">Termostato, cámara, luces, enchufes</div>
+        </div>
+        <div class="mm-branch">
+          <span class="mm-icon">⌚</span>
+          <div class="mm-title">Wearables</div>
+          <div class="mm-desc">Smartwatch, pulsera de actividad</div>
+        </div>
+        <div class="mm-branch">
+          <span class="mm-icon">🏭</span>
+          <div class="mm-title">Industrial (IIoT)</div>
+          <div class="mm-desc">Sensores, robots, mantenimiento predictivo</div>
+        </div>
+        <div class="mm-branch">
+          <span class="mm-icon">🏙️</span>
+          <div class="mm-title">Smart City</div>
+          <div class="mm-desc">Semáforos, contadores, iluminación pública</div>
+        </div>
+        <div class="mm-branch">
+          <span class="mm-icon">📡</span>
+          <div class="mm-title">Conectividad</div>
+          <div class="mm-desc">Wi-Fi, Bluetooth, LoRa, 5G, Zigbee</div>
+        </div>
+        <div class="mm-branch">
+          <span class="mm-icon">☁️</span>
+          <div class="mm-title">Nube (Cloud)</div>
+          <div class="mm-desc">Almacenamiento, IA, procesamiento de datos</div>
+        </div>
+        <div class="mm-branch">
+          <span class="mm-icon">🔒</span>
+          <div class="mm-title">Ciberseguridad</div>
+          <div class="mm-desc">Cifrado, autenticación, privacidad</div>
+        </div>
+        <div class="mm-branch">
+          <span class="mm-icon">📊</span>
+          <div class="mm-title">Big Data</div>
+          <div class="mm-desc">Análisis, predicciones, decisiones inteligentes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- REFERENCIAS -->
+<section id="referencias">
+  <div class="fade-in">
+    <span class="section-label">09 · Bibliografía</span>
+    <h2>Referencias y recursos</h2>
+    <p class="section-desc">Fuentes consultadas para la elaboración de esta página web.</p>
+  </div>
+  <div class="ref-list fade-in">
+    <div class="ref-item">
+      <div class="ref-bullet"></div>
+      <div class="ref-content">
+        <strong>W3Schools – HTML Tutorial:</strong> Referencia de aprendizaje de HTML utilizada para programar esta página.
+        <a href="https://www.w3schools.com/html/default.asp" target="_blank">www.w3schools.com/html</a>
+      </div>
+    </div>
+    <div class="ref-item">
+      <div class="ref-bullet"></div>
+      <div class="ref-content">
+        <strong>Statista (2023):</strong> "Number of Internet of Things (IoT) connected devices worldwide".
+        <a href="https://www.statista.com/statistics/1183457/iot-connected-devices-worldwide/" target="_blank">statista.com</a>
+      </div>
+    </div>
+    <div class="ref-item">
+      <div class="ref-bullet"></div>
+      <div class="ref-content">
+        <strong>McKinsey Global Institute (2015):</strong> "The Internet of Things: Mapping the value beyond the hype".
+        Informe de referencia sobre el impacto económico del IoT.
+      </div>
+    </div>
+    <div class="ref-item">
+      <div class="ref-bullet"></div>
+      <div class="ref-content">
+        <strong>Nest Labs / Google:</strong> Documentación oficial sobre el funcionamiento del termostato Nest y el ahorro energético.
+        <a href="https://store.google.com/es/category/connected-home" target="_blank">store.google.com</a>
+      </div>
+    </div>
+    <div class="ref-item">
+      <div class="ref-bullet"></div>
+      <div class="ref-content">
+        <strong>Apple Inc.:</strong> Información sobre las funcionalidades de salud del Apple Watch.
+        <a href="https://www.apple.com/es/apple-watch-series-9/health/" target="_blank">apple.com/es/apple-watch</a>
+      </div>
+    </div>
+    <div class="ref-item">
+      <div class="ref-bullet"></div>
+      <div class="ref-content">
+        <strong>CNMC – Comisión Nacional de Mercados y la Competencia:</strong> Información sobre el despliegue de contadores inteligentes en España.
+        <a href="https://www.cnmc.es" target="_blank">cnmc.es</a>
+      </div>
+    </div>
+    <div class="ref-item">
+      <div class="ref-bullet"></div>
+      <div class="ref-content">
+        <strong>IoT Analytics (2023):</strong> "State of IoT – Spring 2023". Informe anual sobre el estado del mercado IoT global.
+        <a href="https://iot-analytics.com" target="_blank">iot-analytics.com</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Página web elaborada como actividad académica sobre <strong>Domótica IoT – Internet de las Cosas</strong></p>
+  <p style="margin-top:0.5rem;">Elaborado por <strong>Xoel Cristobo Zúñiga</strong> · Materia: TIC · 1.º Bachillerato</p>
+</footer>
+
+<script>
+  // Intersection Observer para animaciones fade-in
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
